@@ -1,4 +1,6 @@
-# Simulation of “All-The-Way”, “As-Far-As-Can” and “Stages” leader election protocols in ring using Message Parsing Interface and C++
+# MPI-leader-election
+
+Simulation of “All-The-Way”, “As-Far-As-Can” and “Stages” leader election protocols in ring using Message Parsing Interface and C++
 
 ## Idea
 
@@ -14,7 +16,7 @@ Emulations were executed on Carleton University School of Computer Science lambd
 where rank is the number of a processor (from set {0,1,...,15}), and size is the amount of computers in network (in our case at most 16). 
 Number of processor is equal to its ID, so the structure of the network is as follows:
 
-![]([https://raw.github.com/freetonik/MPI-leader-election/master/images/1.png]
+![](https://raw.github.com/freetonik/MPI-leader-election/master/images/1.png)
 
 This configuration is not only most straightforward to imagine, but also happens to be the worst case configuration for protocol “As-Far-As- Can”.
 
@@ -76,11 +78,11 @@ This protocol is an obvious modification of previous protocol. Instead of forwar
 
 The way MPI handles message passing is the following: a node that needs to send a message originates “MPI_SEND” command; a node that needs to receive a message originates “MPI_RECV” command. Consider the following case:
 
-![]([https://raw.github.com/freetonik/MPI-leader-election/master/images/2.png]
+![](https://raw.github.com/freetonik/MPI-leader-election/master/images/2.png)
 
 Each nodes executes “MPI_SEND” function to send its ID to the right. At the next step, each node executes “MPI_RECV” to receive a message from the left. Then, all the nodes forward the message further, except for node 0 (its ID < received ID 15).
 
-![]([https://raw.github.com/freetonik/MPI-leader-election/master/images/3.png]
+![](https://raw.github.com/freetonik/MPI-leader-election/master/images/3.png)
 
 In this situation, every node executes “MPI_RECV” to receive the forwarded message, but since node 0 didnʼt forward anything, node 1 will wait forever. This situation is due to the way MPI passes messages and can be avoided by either sending additional notification message prior to any communication to specify the type of future communication or its absence, or by building up additional logic to the protocol. Either way will affect both time and message complexity, so it was decided to use another way around this problem: donʼt filter messages physically, but rather count the number of times a message was stopped by a smaller ID node.
 
@@ -152,6 +154,6 @@ Legend:
 • AFAC, saved = number of saved messages by AFAC
 • STG = time of Stages
 
-![]([https://raw.github.com/freetonik/MPI-leader-election/master/images/4.png]
+![](https://raw.github.com/freetonik/MPI-leader-election/master/images/4.png)
 
 We can clearly see how AFAC is faster, than ATW+saved, and how AFAC saves us almost a half of messages by filtering them upon receiving. Yet, sometimes not so obvious results occur, for example, ATW+saved executes faster, than ATW without any additional messages. This happens because the network is used by other processes too, and the result depends on many factors within that particular network; so this measurement is only an approximation, but it gives a flavor of real-world result.
